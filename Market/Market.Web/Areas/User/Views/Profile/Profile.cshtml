@@ -1,0 +1,75 @@
+﻿@model UserProfileServiceModel
+
+<ul class="nav nav-tabs" id="myTab" role="tablist" style="margin-bottom:5%; margin-top: 2%;">
+    <li class="nav-item active">
+        <a class="nav-link" id="home-tab" data-toggle="tab" href="#stocks" role="tab" aria-controls="home" aria-selected="true">Stock</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Profile</a>
+    </li>
+    @if (Model.UserName == User.Identity.Name)
+    {
+        <li class="nav-item">
+            <a class="nav-link" id="messages-tab" data-toggle="tab" href="#messages" role="tab" aria-controls="messages" aria-selected="false">Messages</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="orders-tab" data-toggle="tab" href="#recievedOrders" role="tab" aria-controls="orders" aria-selected="false">Recieved Orders</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="orders-tab" data-toggle="tab" href="#yourOrders" role="tab" aria-controls="orders" aria-selected="false">Your Orders</a>
+        </li>
+    }
+</ul>
+<div class="tab-content" id="myTabContent">
+    <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+        @await Html.PartialAsync("_ProfileDetailsPartial", Model)
+        @if (Model.UserName == User.Identity.Name)
+        {
+            <a asp-controller="Manage" asp-action="Index" class="btn btn-default">Edit Profile</a>
+        }
+    </div>
+    <div class="tab-pane fade" id="messages" role="tabpanel" aria-labelledby="messages-tab">
+        @await Html.PartialAsync("_MessagesPartial", Model)
+    </div>
+    <div class="tab-pane fade active in" id="stocks" role="tabpanel" aria-expanded="true" aria-labelledby="home-tab">
+        <div class="row course-listings">
+            @if (!Model.Posts.Any())
+            {
+                <h2><span style="color: gray">No posts found</span></h2>
+                <br />
+                if (User.Identity.Name == Model.UserName)
+                {
+                    <a asp-area="Post" asp-controller="Add" asp-action="Add" class="btn btn-warning btn-lg "><span class="glyphicon glyphicon-plus"></span> Add Post</a>
+                }
+            }
+            else
+            {
+                @await Html.PartialAsync("_StocksListingPartial", Model.Posts)
+            }
+        </div>
+    </div>
+    <div class="tab-pane fade" id="recievedOrders" role="tabpanel" aria-labelledby="orders-tab">
+        @{ var recievedOrders = Model.Orders.Where(x => x.Sender.UserName == User.Identity.Name && !x.IsRecieved); }
+
+        @if (!recievedOrders.Any())
+        {
+            <h2><span style="color: gray">No recieved orders</span></h2>
+        }
+        else
+        {
+            @await Html.PartialAsync("_OrdersPartialView", recievedOrders)
+        }
+    </div>
+    <div class="tab-pane fade" id="yourOrders" role="tabpanel" aria-labelledby="orders-tab">
+        @{ var yourOrders = Model.Orders.Where(x => x.Recipient.UserName == User.Identity.Name && !x.IsRecieved); }
+
+        @if (!yourOrders.Any())
+        {
+            <h2><span style="color: gray">No requested orders</span></h2>
+        }
+        else
+        {
+            @await Html.PartialAsync("_OrdersPartialView", yourOrders)
+        }
+    </div>
+</div>
